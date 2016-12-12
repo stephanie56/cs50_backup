@@ -74,17 +74,21 @@ int main(int argc, char* argv[])
     }
 
     // determine padding for scanlines
-    int inptr_padding =  (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+    int inptr_biWidth = bi.biWidth;
+    int inptr_biHeight = bi.biHeight;
+    int inptr_padding =  (4 - (inptr_biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 
     // resized width and height
-    newbiWidth = n * bi.biWidth;
-    newbiHeight = n * bi.biHeight;
+    bi.biWidth = n * bi.biWidth;
+    bi.biHeight = n * bi.biHeight;
+    int new_biWidth = bi.biWidth;
+    int new_biHeight = bi.biHeight;
 
      // resized padding for scanlines
-    int outptr_padding = (4 - (newbiWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+    int outptr_padding = (4 - (new_biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
 
     // update header info
-    bi.biSizeImage = newbiWidth * abs(newbiHeight) * sizeof(RGBTRIPLE) + outptr_padding * abs(newbiHeight);
+    bi.biSizeImage = new_biWidth * abs(new_biHeight) * sizeof(RGBTRIPLE) + outptr_padding * abs(new_biHeight);
     bf.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + bi.biSizeImage;
 
 
@@ -105,116 +109,46 @@ int main(int argc, char* argv[])
     // repeat next row
 
 
-
-    // for each infile row
-    for(int i = 0, biHeight = abs(newbiHeight); i < biHeight; i++)
+    // iterate over infile's scanlines
+    for (int i = 0, biHeight = abs(inptr_biHeight); i < biHeight; i++)
     {
+        RGBTRIPLE triple;
 
-        //RGBTRIPLE triple;
-        RGBTRIPLE triple_arr[bi.biWidth * n];
+         for(int copyScanline = 0; copyScanline < n; copyScanline++) {
 
-        // for each pixel
-        for(int j = 0; j < bi.biWidth; j++)
-        {
+          // iterate each pixel of line j from infile
+          for(int j = 0; j < inptr_biWidth; j++)
+          {
+              // read each pixel from infile
+              fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
 
-            // write to array n times
-            for(int k = 0; k < n; k++)
-            {
-                fread(&triple_arr[0], sizeof(RGBTRIPLE), 1, inptr);
-            }
+              // fwrite n time of pixel to outfile
+              for(int k = 0; k < n; k++)
+              {
+                  fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+              }
 
+          }
 
-        }
-
-
-
-        // for n times
-        for(int l = 0; l < n; l++)
-        {
-            fwrite(triple_arr, sizeof(RGBTRIPLE), 1, outptr);
-            for(int m = 0; m < outptr_padding; m++)
+            // outfile scanline add padding
+            for(int l = 0; l < outptr_padding; l++)
             {
                 fputc(0x00, outptr);
             }
+
+        if(copyScanline != (n-1)){
+          // infile line back to beginning
+          fseek(inptr, -(inptr_biWidth * sizeof(RGBTRIPLE)), SEEK_CUR);
         }
 
-        // skip over infile paading
+     }
+
+      // infile scanline skip padding
         fseek(inptr, inptr_padding, SEEK_CUR);
 
     }
 
 
-
-    // close infile
-    fclose(inptr);
-
-    // close outfile
-    fclose(outptr);
-
-
-
-    // that's all folks
-    return 0;
-}
-
-
-
-   /**
-
-    // iterate over infile's scanlines
-    for (int i = 0, biHeight = abs(bi.biHeight); i < biHeight; i++)
-    {
-        RGBTRIPLE triple;
-
-      // iterate each pixel of line 1 from infile
-      for(int j = 0; j < bi.biWidth; j++)
-      {
-
-          // read each pixel from infile
-          fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
-
-          // fwrite n time of pixel 1 to outfile
-          for(int k = 0; k < n; k++)
-          {
-              fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
-          }
-
-      }
-
-    // infile skip line 1 padding
-    fseek(inptr, inptr_padding, SEEK_CUR);
-
-
-    // outfile cursor jump back to beginning of scanline
-    fseek(outptr, n * bi.biWidth * sizeof(RGBTRIPLE), SEEK_CUR);
-
-    // fread the whole scanline from outfile
-    fread(&triple, sizeof(RGBTRIPLE), n * bi.biWidth, outptr);
-
-    // outfile scanline 1 add padding
-    for(int l = 0; l < outptr_padding; l++)
-    {
-        fputc(0x00, outptr);
-    }
-
-    // fwrite n-1 time of scanline 1
-    for(int m = 1; m < n; m++)
-    {
-        fwrite(&triple, sizeof(RGBTRIPLE), n * bi.biWidth, outptr);
-
-        // outfile add padding
-        for(int l = 0; l < outptr_padding; l++){
-
-            fputc(0x00, outptr);
-
-        }
-
-    }
-
-
-    } // iterate each line (bi.Height) of scanline
-
-
     // close infile
     fclose(inptr);
 
@@ -224,14 +158,3 @@ int main(int argc, char* argv[])
     // that's all folks
     return 0;
 }
-
-**/
-
-
-
-
-
-
-
-
-    
