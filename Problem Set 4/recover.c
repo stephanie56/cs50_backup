@@ -62,3 +62,35 @@ int main(int argc, char* argv[])
         // read next buffer
     }
 }
+
+
+
+/** code snippets **/
+
+// if the block is less than 512, it reaches eof
+    int number = fread(buffer, 1, 512, raw_file);
+
+        if (number < 512)
+        {
+            fwrite(buffer, 1, 10, test2);
+        }
+        else {
+             printf("something wrong here....\n");
+             fwrite(buffer, 1, 100, test2);
+        }
+
+// check first few bytes of buffer
+char buffer[512];
+
+    fread(buffer, 1, 512, raw_file);
+
+        if (*buffer == 'y' && *(buffer+1) == 'e')
+        {
+            fwrite(buffer, 1, 512, test2);
+        }
+        else {
+             printf("something wrong here....\n");
+             return 4;
+        }
+
+    
