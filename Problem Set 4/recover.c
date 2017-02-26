@@ -23,74 +23,42 @@ int main(int argc, char* argv[])
     char *infile = argv[1];
 
     // open input file card.raw
-    FILE *raw_file = fopen(infile, "r");
-    if(raw_file == NULL)
+    FILE *raw = fopen(infile, "r");
+    FILE *image;
+
+    if(raw == NULL)
     {
         printf("Could not open %s.\n", infile);
         return 2;
     }
 
-    // repeat until end of card
-        // read 512 bytes into a buffer
-        // malloc 512 bytes for one block
-        char buffer[512];
-        while(buffer.length )
-        {
-            fread(buffer, 1, 512, raw_file);
-        }
+    unsigned char buffer[512];
+    char filename[8];
 
+    // check each block of 512 bytes
+    int counter = 0;
 
-
-
-    if(buffer[0] == 0xff &&
-       buffer[1] == 0xd8 &&
-       buffer[2] == 0xff &&
-       buffer[3] & 0xf0 == 0xe0)
+    while(fread(buffer, 512, 1, raw) == 1)
     {
-        // name new image files 000.jpg
-        // with sprintf %03i: set field width to 3, padding with 0
-        sprintf(filename, "%03i.jpg", 0);
-        FILE *image = fopen(filename, "w");
+       if(buffer[0] == 0xff && buffer[1] == 0xd8 && buffer[2] == 0xff && (buffer[3] & 0xf0) == 0xe0)
+       {
+           if(counter != 0){
+               fclose(image);
+           }
 
-        while(){
-        fwrite(buffer, 512, 1, filename);
-        }
+           sprintf(filename, "%03i.jpg", counter);
+           image = fopen(filename, "w");
+           fwrite(buffer, 512, 1, image);
+           counter++;
+       }
 
+       else if (counter != 0)
+       {
+           fwrite(buffer, 512, 1, image);
+       }
     }
-    else
-    {
-        // read next buffer
-    }
+
+
+    fclose(raw);
+
 }
-
-
-
-/** code snippets **/
-
-// if the block is less than 512, it reaches eof
-    int number = fread(buffer, 1, 512, raw_file);
-
-        if (number < 512)
-        {
-            fwrite(buffer, 1, 10, test2);
-        }
-        else {
-             printf("something wrong here....\n");
-             fwrite(buffer, 1, 100, test2);
-        }
-
-// check first few bytes of buffer
-char buffer[512];
-
-    fread(buffer, 1, 512, raw_file);
-
-        if (*buffer == 'y' && *(buffer+1) == 'e')
-        {
-            fwrite(buffer, 1, 512, test2);
-        }
-        else {
-             printf("something wrong here....\n");
-             return 4;
-        }
-
-    
