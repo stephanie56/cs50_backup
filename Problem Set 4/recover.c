@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
@@ -19,27 +20,41 @@ int main(int argc, char* argv[])
     }
 
     // remember file names
-    char* infile = argv[1];
+    char *infile = argv[1];
 
     // open input file card.raw
-    FILE* raw_file = fopen(infile, "r");
+    FILE *raw_file = fopen(infile, "r");
     if(raw_file == NULL)
     {
         printf("Could not open %s.\n", infile);
         return 2;
     }
 
-    // malloc 512 bytes for one block
-    char buffer[512];
-    fread(buffer, 512, 1, raw_file);
+    // repeat until end of card
+        // read 512 bytes into a buffer
+        // malloc 512 bytes for one block
+        char buffer[512];
+        while(buffer.length )
+        {
+            fread(buffer, 1, 512, raw_file);
+        }
+
+
+
+
     if(buffer[0] == 0xff &&
        buffer[1] == 0xd8 &&
        buffer[2] == 0xff &&
        buffer[3] & 0xf0 == 0xe0)
     {
-        // found new JPEG - fwrite new file
-        FILE* new_image = fopen("000.jpg", "w");
-        fwrite(buffer);
+        // name new image files 000.jpg
+        // with sprintf %03i: set field width to 3, padding with 0
+        sprintf(filename, "%03i.jpg", 0);
+        FILE *image = fopen(filename, "w");
+
+        while(){
+        fwrite(buffer, 512, 1, filename);
+        }
 
     }
     else
